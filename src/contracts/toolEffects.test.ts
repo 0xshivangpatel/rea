@@ -64,6 +64,13 @@ const EXECUTION_WORDING_EXCEPTIONS: Readonly<Record<string, string>> = {
   inspect_adb_package: "reports install times without changing the device",
   list_adb_processes: "lists running processes without changing the device",
   inspect_web_event_listeners: "states it does not evaluate JavaScript",
+  emulate_windows_sample:
+    "speakeasy emulates instructions in-process; the sample never runs natively",
+  inspect_memory_image:
+    "runs operator-configured Volatility over an image, not the target",
+  inspect_process_monitor_log: "parses an export without launching Procmon",
+  compare_autoruns_snapshots: "parses exports without launching Autoruns",
+  inspect_packet_capture: "starts names connection starts seen in the capture",
 };
 
 const declaresForeignAuthority = (name: string): boolean => {

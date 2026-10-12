@@ -1148,6 +1148,21 @@ unknown chunks, depth limits and extracted child digests. The optional
 Neither optional toolchain is a base-lane prerequisite. See
 [firmware analysis](firmware-analysis.md) for limits and unverified formats.
 
+### Malware analysis tools
+
+`npm run verify:malware` runs each configured malware tool through the compiled
+CLI against a benign sample (`REA_MALWARE_VERIFY_SAMPLE`, for example
+`tests/fixtures/malware/probe.c` built with MinGW), validates every Evidence
+record against its result schema, and correlates the results. Tools selected by
+`REA_CAPA_COMMAND`, `REA_FLOSS_COMMAND`, `REA_YARA_COMMAND`,
+`REA_SPEAKEASY_COMMAND`, `REA_VOLATILITY_COMMAND`, `REA_EVTXECMD_COMMAND` and
+`REA_TSHARK_COMMAND` run only with their optional `REA_MALWARE_VERIFY_*` inputs;
+others are reported as named skips. Golden producer outputs under
+`tests/fixtures/malware/` come from capa 9.4.0, FLOSS 3.1.1, speakeasy 1.5.11
+and TShark 4.2.2 runs over that probe and a synthetic documentation-address
+capture. The EvtxECmd golden reproduces EvtxECmd 2026.5.0's record shape with
+synthetic values. See [malware analysis](malware-analysis.md#verification).
+
 ### JavaScript source recovery
 
 Build once with `npm run build:cached`, then run `npm run verify:javascript:recovery`.

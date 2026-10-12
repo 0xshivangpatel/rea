@@ -416,6 +416,10 @@ const workflowAvailabilityFor = ({
             "On Linux, provide an absolute REA_BINWALK_COMMAND (Binwalk 3.1.x, verified with 3.1.0) or REA_UNBLOB_COMMAND (Unblob 26.6.x, verified with 26.6.4) path and util-linux prlimit. Extraction also requires the selected format’s external extractor.",
         };
   }
+  // Caller-supplied tools are resolved and version-probed per request; a
+  // missing tool returns an actionable refusal naming its REA_*_COMMAND.
+  if (kind === "malware-provider")
+    return { reason: "available", remediation: null };
   if (kind === "android-provider")
     return policy.androidAnalysisAvailability?.status === "available"
       ? { reason: "available", remediation: null }

@@ -14,6 +14,7 @@ const MIGRATED_PROVIDER_ROOTS = new Set([
   "ida",
   "inspector",
   "javascript",
+  "malware",
 ]);
 const repositoryPath = (root, path) =>
   relative(root, path).replaceAll("\\", "/");

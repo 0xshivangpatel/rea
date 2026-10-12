@@ -50,6 +50,12 @@ const browserEvidence = effects({
   accessesNetwork: true,
 });
 const sessionEvidence = effects({ mutatesSession: true });
+// Caller-supplied analysis tools read a private snapshot or an in-place artifact.
+const malwareTool = effects({
+  mutatesSession: true,
+  launchesProcess: true,
+  writesFilesystem: true,
+});
 
 /** Explicit effect audit for every public tool. */
 export const TOOL_EFFECTS: Readonly<Record<string, ToolEffects>> = {
@@ -110,6 +116,16 @@ export const TOOL_EFFECTS: Readonly<Record<string, ToolEffects>> = {
     writesFilesystem: true,
     idempotent: false,
   }),
+  inspect_malware_capabilities: malwareTool,
+  extract_malware_strings: malwareTool,
+  match_yara_rules: malwareTool,
+  emulate_windows_sample: malwareTool,
+  inspect_memory_image: malwareTool,
+  inspect_windows_event_log: malwareTool,
+  inspect_process_monitor_log: evidence,
+  compare_autoruns_snapshots: evidence,
+  inspect_packet_capture: malwareTool,
+  correlate_network_indicators: evidence,
   inspect_android_package: effects({
     mutatesSession: true,
     launchesProcess: true,

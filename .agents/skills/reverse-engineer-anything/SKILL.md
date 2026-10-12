@@ -1,8 +1,8 @@
 ---
 name: reverse-engineer-anything
-description: Reverse engineer native, managed, Electron/JavaScript, packaged, firmware, and browser targets with REA. Use shipped-artifact or requested runtime evidence to explain features, compare versions, decompile code, or guide a reconstruction. Skip REA for ordinary source-repository architecture analysis.
+description: Reverse engineer native, managed, Electron/JavaScript, packaged, firmware, and browser targets, and triage malware samples and their detonation telemetry, with REA. Use shipped-artifact or requested runtime evidence to explain features, compare versions, decompile code, find C2 channels, or guide a reconstruction. Skip REA for ordinary source-repository architecture analysis.
 metadata:
-  version: "39"
+  version: "40"
 ---
 
 # REA
@@ -57,6 +57,11 @@ explicit path or endpoint and do not need it.
   `extract_firmware` when extraction is requested, with a caller-selected new
   absolute output directory. These tools use caller-supplied Binwalk/Unblob on
   Linux; see the [firmware guide](https://github.com/morluto/rea/blob/main/docs/firmware-analysis.md).
+- Suspicious sample or detonation telemetry (Sysmon `.evtx`, Procmon CSV,
+  `autorunsc` snapshots, pcap, memory image): read
+  [malware triage](references/malware-triage.md) first. Start with
+  `inspect_malware_capabilities` and `extract_malware_strings`, never run the
+  sample, and join network evidence with `correlate_network_indicators`.
 - .NET NativeAOT PE/ELF: native Ghidra analysis. Native code can yield pseudocode;
   consult the NativeAOT workflow in `references/native-and-artifacts.md` for
   optional metadata recovery and its supported host/layout boundary.
@@ -222,6 +227,8 @@ as complete while required questions remain open.
   [references/runtime-observation.md](references/runtime-observation.md)
 - Evidence paging, comparisons, residual unknowns, and verification:
   [references/evidence-workflows.md](references/evidence-workflows.md)
+- Malware samples, detonation telemetry, and C2 discovery:
+  [references/malware-triage.md](references/malware-triage.md)
 
 ## Finish the task
 

@@ -38,6 +38,7 @@ graph TD
         INSPECTOR["src/inspector/<br/>passive V8 Inspector discovery and capture<br/>script and target locations"]
         DOTNET["src/dotnet/<br/>Managed static metadata provider<br/>PE/CLI metadata inventory, members, IL"]
         FIRMWARE["src/firmware/<br/>Binwalk / Unblob adapters<br/>owned processes, report normalization, private extraction"]
+        MALWARE["src/malware/<br/>capa, FLOSS, YARA, speakeasy, Volatility, EvtxECmd, TShark adapters<br/>private sample snapshots, Sysinternals export parsers"]
         ANDROID["src/android/<br/>Static APK adapter<br/>owned SDK stdio, pinned headless JADX, normalization"]
         REFERENCE["src/reference/<br/>Filesystem reference-source reader<br/>bounded traversal, validation, errors"]
     end
@@ -82,6 +83,10 @@ graph TD
     APP --> FIRMWARE
     FIRMWARE --> PROCESS
     FIRMWARE --> CONTRACTS
+    APP --> MALWARE
+    COMPOSITION --> MALWARE
+    MALWARE --> PROCESS
+    MALWARE --> DOMAIN
     APP --> ANDROID
     ANDROID --> PROCESS
     ANDROID --> CONTRACTS

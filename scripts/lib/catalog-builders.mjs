@@ -44,6 +44,11 @@ export const toolFamilyCatalog = (sources) => {
       contracts: sources.firmwareContracts.FIRMWARE_TOOL_CONTRACTS,
     },
     {
+      id: "malware",
+      surface: "malware-provider",
+      contracts: sources.malwareContracts.MALWARE_TOOL_CONTRACTS,
+    },
+    {
       id: "android",
       surface: "android-provider",
       contracts: sources.androidContracts.ANDROID_TOOL_CONTRACTS,
@@ -211,6 +216,43 @@ export const providerCatalog = (sources) => {
       identity: sources.firmwareProvider.UNBLOB_PROVIDER_IDENTITY,
       contracts: sources.firmwareContracts.FIRMWARE_TOOL_CONTRACTS.filter(
         ({ name }) => name === "extract_firmware",
+      ),
+    },
+    ...[
+      "CAPA_TOOL",
+      "FLOSS_TOOL",
+      "YARA_TOOL",
+      "SPEAKEASY_TOOL",
+      "VOLATILITY_TOOL",
+      "EVTXECMD_TOOL",
+      "TSHARK_TOOL",
+    ].map((name) => {
+      const tool = sources.malwareProvider[name];
+      return {
+        identity: {
+          id: tool.id,
+          name: tool.name,
+          version: tool.verifiedVersion,
+        },
+        contracts: declaredContracts(tool.id, [tool.operation]),
+      };
+    }),
+    {
+      identity: sources.malwareProvider.PROCMON_CSV_PROVIDER,
+      contracts: declaredContracts("rea-procmon-csv", [
+        "inspect_process_monitor_log",
+      ]),
+    },
+    {
+      identity: sources.malwareProvider.AUTORUNS_CSV_PROVIDER,
+      contracts: declaredContracts("rea-autoruns-csv", [
+        "compare_autoruns_snapshots",
+      ]),
+    },
+    {
+      identity: sources.malwareCorrelation.NETWORK_CORRELATION_PROVIDER,
+      contracts: sources.malwareContracts.MALWARE_TOOL_CONTRACTS.filter(
+        ({ name }) => name === "correlate_network_indicators",
       ),
     },
     {

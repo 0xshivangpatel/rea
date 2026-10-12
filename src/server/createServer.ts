@@ -69,6 +69,10 @@ import type { FirmwareAnalysisPort } from "../application/firmware/FirmwareAnaly
 import { createFirmwareAnalysisProvider } from "../composition/firmware.js";
 import { registerAndroidTools } from "./registerAndroidTools.js";
 import { registerApktoolTools } from "./registerApktoolTools.js";
+import { registerMalwareTools } from "./registerMalwareTools.js";
+import { MalwareAnalysisService } from "../application/malware/MalwareAnalysisService.js";
+import type { MalwareAnalysisPort } from "../application/malware/MalwareAnalysisPort.js";
+import { createMalwareAnalysisProvider } from "../composition/malware.js";
 import { registerJebTools } from "./registerJebTools.js";
 import { registerAdbTools } from "./registerAdbTools.js";
 import { AndroidAnalysisService } from "../application/android/AndroidAnalysisService.js";
@@ -119,6 +123,7 @@ export interface CreateServerOptions {
   readonly webNetworkCapture?: WebNetworkCaptureService;
   readonly androidAnalysis?: AndroidAnalysisPort;
   readonly apktoolAnalysis?: ApktoolResourceAnalysisPort;
+  readonly malwareAnalysis?: MalwareAnalysisPort;
   readonly jebAnalysis?: JebAnalysisPort;
   readonly adbDeviceAnalysis?: AdbDeviceAnalysisPort;
   readonly browserObservation?: BrowserObservationPort;
@@ -248,6 +253,9 @@ export const createServer = (
     options.apktoolAnalysis ??
     createApktoolResourceAnalysisProvider(environment);
   const jeb = options.jebAnalysis ?? createJebAnalysisProvider(environment);
+  const malwareAnalysis = new MalwareAnalysisService(
+    options.malwareAnalysis ?? createMalwareAnalysisProvider(environment),
+  );
   const adbDevice =
     options.adbDeviceAnalysis ?? createAdbDeviceAnalysisProvider(environment);
   let providerClose: Promise<void> | undefined;
@@ -256,6 +264,7 @@ export const createServer = (
       android.close(),
       wasmArtifact.close(),
       apktool.close(),
+      malwareAnalysis.close(),
       jeb.close(),
       adbDevice.close(),
       evmInterface.close(),
@@ -343,6 +352,12 @@ export const createServer = (
     recordEvidence,
     analysisAdmission,
   );
+  registerMalwareTools(server, malwareAnalysis, {
+    logger: toolLogger,
+    recordEvidence,
+    evidenceById,
+    withAdmittedAnalysis: analysisAdmission,
+  });
   registerObservationTools(toolContext);
   registerGuidedPrompts(server, analysis, session);
   if (session !== undefined) {

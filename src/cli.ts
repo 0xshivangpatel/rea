@@ -15,6 +15,7 @@ import { registerUtilityCommands } from "./cli/utilityCommands.js";
 import { registerArtifactCommands } from "./cli/artifactCommands.js";
 import { registerManagedCommands } from "./cli/managedCommands.js";
 import { registerFirmwareCommands } from "./cli/firmwareCommands.js";
+import { registerMalwareCommands } from "./cli/malwareCommands.js";
 import { registerAndroidCommands } from "./cli/androidCommands.js";
 import { registerApktoolCommands } from "./cli/apktoolCommands.js";
 import { registerJebCommands } from "./cli/jebCommands.js";
@@ -82,6 +83,7 @@ export const createCli = (
   registerJebCommands(cli, logger, environment);
   registerAdbCommands(cli, logger, environment);
   registerFirmwareCommands(cli, logger, environment);
+  registerMalwareCommands(cli, logger, environment);
   registerBinaryDiagnosticsCommands(cli, logger, environment);
   registerAnalysisViewCommands(cli, logger);
   registerEvidenceCommands(cli, logger);

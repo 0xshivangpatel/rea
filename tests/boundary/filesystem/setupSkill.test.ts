@@ -393,6 +393,7 @@ describe("canonical skill transaction", () => {
       "references/connection-and-recovery.md",
       "references/evidence-workflows.md",
       "references/javascript-applications.md",
+      "references/malware-triage.md",
       "references/native-and-artifacts.md",
       "references/runtime-observation.md",
     ];

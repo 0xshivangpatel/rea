@@ -79,3 +79,32 @@ export const windowsBatchCommand = (options: {
     arguments: ["/d", "/e:on", "/v:off", "/s", "/c", `"${tokens.join(" ")}"`],
   };
 };
+
+/** Process creation for one caller-selected launcher on the selected host. */
+export interface LauncherInvocation {
+  readonly command: string;
+  readonly arguments: readonly string[];
+  readonly windowsVerbatimArguments: boolean;
+}
+
+/**
+ * Run a caller-selected launcher directly, or through cmd.exe when Windows
+ * can only execute it there. Throws WindowsBatchCommandError when a token
+ * cannot be passed to cmd.exe safely.
+ */
+export const launcherInvocation = (
+  command: string,
+  arguments_: readonly string[],
+  environment: Readonly<NodeJS.ProcessEnv>,
+  platform: NodeJS.Platform = process.platform,
+): LauncherInvocation =>
+  platform === "win32" && isWindowsBatchFile(command)
+    ? {
+        ...windowsBatchCommand({
+          environment,
+          batchPath: command,
+          arguments: arguments_,
+        }),
+        windowsVerbatimArguments: true,
+      }
+    : { command, arguments: arguments_, windowsVerbatimArguments: false };

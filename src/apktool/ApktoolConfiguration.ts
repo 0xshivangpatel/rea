@@ -9,9 +9,9 @@ import type { ProviderAvailability } from "../application/AnalysisProvider.js";
 import type { ProviderRejectionCode } from "../contracts/providerSelection.js";
 import type { JsonValue } from "../domain/jsonValue.js";
 import {
-  isWindowsBatchFile,
-  windowsBatchCommand,
+  launcherInvocation,
   WindowsBatchCommandError,
+  type LauncherInvocation,
 } from "../process/WindowsBatchCommand.js";
 
 /** Environment key selecting the caller's apktool launcher. */
@@ -70,11 +70,7 @@ export interface ApktoolClientIdentity {
 }
 
 /** Process creation for one apktool run on the selected host. */
-export interface ApktoolInvocation {
-  readonly command: string;
-  readonly arguments: readonly string[];
-  readonly windowsVerbatimArguments: boolean;
-}
+export type ApktoolInvocation = LauncherInvocation;
 
 /**
  * Run the selected launcher directly, or through cmd.exe when Windows can
@@ -88,20 +84,7 @@ export const apktoolInvocation = (
   environment: Readonly<NodeJS.ProcessEnv>,
   platform: NodeJS.Platform = process.platform,
 ): ApktoolInvocation =>
-  platform === "win32" && isWindowsBatchFile(selection.command)
-    ? {
-        ...windowsBatchCommand({
-          environment,
-          batchPath: selection.command,
-          arguments: arguments_,
-        }),
-        windowsVerbatimArguments: true,
-      }
-    : {
-        command: selection.command,
-        arguments: arguments_,
-        windowsVerbatimArguments: false,
-      };
+  launcherInvocation(selection.command, arguments_, environment, platform);
 
 /** Read the version from `apktool --version` output (first non-empty line). */
 export const parseApktoolVersionOutput = (
