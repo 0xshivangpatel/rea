@@ -22,7 +22,10 @@ import { analysisErrorProjectionSchema } from "../contracts/errorSchemas.js";
 import { compactAdvertisedInputSchema } from "../contracts/compactInputSchema.js";
 import { transformAdvertisedInputJsonSchema } from "../contracts/toolSchemaMetadata.js";
 import type { EvidenceWriter } from "../application/investigation/InvestigationRecordPort.js";
-import { AnalysisResourceConstraintError } from "../domain/analysisErrorCore.js";
+import {
+  AnalysisCapabilityUnavailableError,
+  AnalysisResourceConstraintError,
+} from "../domain/analysisErrorCore.js";
 import { projectAnalysisError } from "../domain/analysisErrorProjection.js";
 import { createEvidence } from "../domain/evidence.js";
 import { jsonObjectSchema } from "../domain/jsonValue.js";
@@ -32,6 +35,12 @@ import { encodeToolResult } from "./toolResultEncoding.js";
 /** Compact advertised input schemas within this per-schema byte budget. */
 export interface CompactInputSchemaPresentation {
   readonly budgetBytes: number;
+}
+
+/** Tool names refused before launch under a strict containment policy. */
+export interface ForeignExecutionRefusal {
+  readonly names: ReadonlySet<string>;
+  readonly reason: string;
 }
 
 /** A Zod schema whose standard interface exposes a JSON Schema projection. */
@@ -58,6 +67,9 @@ export class EvidenceMcpServer extends McpServer {
     readonly delivery: ToolResultDelivery,
     private readonly compactPresentation:
       | CompactInputSchemaPresentation
+      | undefined = undefined,
+    private readonly refuseExecution:
+      | ForeignExecutionRefusal
       | undefined = undefined,
   ) {
     super(info, options);
@@ -101,12 +113,26 @@ export class EvidenceMcpServer extends McpServer {
               compactAdvertisedInputSchema(projected, budget).schema,
           )
         : undefined;
+    const refusal = this.refuseExecution;
+    const gatedCallback =
+      refusal !== undefined && refusal.names.has(name)
+        ? () => this.refuseForeignExecution(name, refusal.reason)
+        : callback;
     return super.registerTool(
       name,
       (inputSchema === undefined
         ? config
         : { ...config, inputSchema }) as never,
-      callback as never,
+      gatedCallback as never,
+    );
+  }
+
+  /** Refuse a gated tool before launch so its foreign code never runs. */
+  private refuseForeignExecution(name: string, reason: string) {
+    return this.delivery.toErrorToolResult(
+      new AnalysisCapabilityUnavailableError("rea-containment", name, reason, {
+        userMessage: reason,
+      }),
     );
   }
 

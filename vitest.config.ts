@@ -31,7 +31,7 @@ const MAX_TEST_WORKERS = Math.min(2, availableParallelism());
 const TEST_PROJECTS = [
   {
     name: "domain",
-    include: ["src/{contracts,domain}/**/*.test.ts"],
+    include: ["src/{config,contracts,domain}/**/*.test.ts"],
     pool: "threads" as const,
     maxWorkers: MAX_TEST_WORKERS,
     // Domain and contract modules are pure and own no process-global state, so

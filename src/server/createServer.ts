@@ -24,7 +24,15 @@ import {
   COMPACT_INPUT_SCHEMA_BUDGET_BYTES,
   parseMcpInputSchemaProfile,
 } from "../config/mcpInputSchemaProfile.js";
-import type { CompactInputSchemaPresentation } from "./EvidenceMcpServer.js";
+import type {
+  CompactInputSchemaPresentation,
+  ForeignExecutionRefusal,
+} from "./EvidenceMcpServer.js";
+import { FOREIGN_EXECUTION_TOOL_NAMES } from "../contracts/foreignExecutionTools.js";
+import {
+  parseUntrustedExecutionPolicy,
+  type UntrustedExecutionPolicy,
+} from "../config/untrustedExecutionPolicy.js";
 import { isAbsolute } from "node:path";
 
 import type { BinarySessionPort } from "../application/binary/BinarySessionPort.js";
@@ -184,6 +192,7 @@ const createMcpServer = (
   session: BinarySessionPort | undefined,
   delivery: ToolResultDelivery,
   compactPresentation: CompactInputSchemaPresentation | undefined,
+  refuseExecution: ForeignExecutionRefusal | undefined,
 ): EvidenceMcpServer =>
   new EvidenceMcpServer(
     {
@@ -202,7 +211,31 @@ const createMcpServer = (
       : (evidence) => session.recordEvidence(evidence),
     delivery,
     compactPresentation,
+    refuseExecution,
   );
+
+/** Resolve the declared containment posture, throwing on an invalid value. */
+const resolveContainmentPolicy = (
+  environment: Readonly<NodeJS.ProcessEnv>,
+): UntrustedExecutionPolicy => {
+  const parsed = parseUntrustedExecutionPolicy(
+    environment.REA_UNTRUSTED_EXECUTION,
+  );
+  if (!parsed.ok) throw parsed.error;
+  return parsed.value;
+};
+
+/** Build the strict-mode refusal set, or undefined when execution is permitted. */
+const foreignExecutionRefusalFor = (
+  policy: UntrustedExecutionPolicy,
+): ForeignExecutionRefusal | undefined =>
+  policy.executionPermitted
+    ? undefined
+    : {
+        names: FOREIGN_EXECUTION_TOOL_NAMES,
+        reason:
+          "REA_UNTRUSTED_EXECUTION=strict refuses tools that run untrusted code or change a device, so a sample cannot reach the network from this host. Detonate in an isolated lab and set REA_UNTRUSTED_EXECUTION=isolated (sample egress denied) or =simulated (egress answered by a simulator), or unset it for ordinary reverse engineering.",
+      };
 
 /**
  * Construct one MCP server without acquiring subprocess resources.
@@ -240,10 +273,13 @@ export const createServer = (
   };
   const startedAt = new Date().toISOString();
   const logger = options.logger ?? silentLogger;
+  const containment = resolveContainmentPolicy(environment);
+  const foreignExecutionRefusal = foreignExecutionRefusalFor(containment);
   const server = createMcpServer(
     session,
     delivery,
     selectCompactInputSchemaPresentation(environment),
+    foreignExecutionRefusal,
   );
   const android =
     options.androidAnalysis ?? createAndroidAnalysisProvider(environment);
@@ -357,6 +393,7 @@ export const createServer = (
     recordEvidence,
     evidenceById,
     withAdmittedAnalysis: analysisAdmission,
+    containment,
   });
   registerObservationTools(toolContext);
   registerGuidedPrompts(server, analysis, session);
